@@ -12,14 +12,23 @@ const Home: React.FC<HomeProps> = () => {
 
   const [count, setCount] = useState<number>(0);
   const [status, setStatus] = useState<string>(IDLE);
+  const [cache, setCache] = useState<any>({});
 
   const onSearch = async (password: string): Promise<void> => {
-    setStatus(LOADING);
-    const url: string = `${endpoint}api/v1/ppass?password=${password}`;
-    const response: Response = await fetch(url);
-    const res: Counter = await response.json();
-    setCount(res.counter);
-    setStatus(RESOLVED);
+    if (cache[password]) {
+      setStatus(LOADING);
+      const counter = cache[password];
+      setCount(counter);
+      setStatus(RESOLVED);
+    } else {
+      setStatus(LOADING);
+      const url: string = `${endpoint}api/v1/ppass?password=${password}`;
+      const response: Response = await fetch(url);
+      const res: Counter = await response.json();
+      setCount(res.counter);
+      setStatus(RESOLVED);
+      setCache((state: any) => ({ ...state, [password]: res.counter }));
+    }
   };
 
   return (
